@@ -528,22 +528,21 @@ def procesar_hoja(
         fecha_original = df.iloc[fila, col_fecha]
 
         if proceso == "Itinerante":
-            # No descartar periodos ni listas de días.
+            # Conservar exactamente el valor de FECHA de la hoja 17 Itinerant.
             if pd.isna(fecha_original):
                 continue
-
-            fecha_texto = str(fecha_original).strip()
-
-            if not fecha_texto:
+        
+            fecha = str(fecha_original).strip()
+        
+            if not fecha:
                 continue
-
-            fecha_convertida = convertir_fecha(fecha_texto)
-
-            if isinstance(fecha_convertida, (pd.Timestamp, datetime)):
-                fecha = fecha_convertida
-            else:
-                # Mantener el contenido original como texto.
-                fecha = fecha_texto
+        
+        else:
+            # Los demás procesos mantienen su comportamiento original.
+            fecha = convertir_fecha(fecha_original)
+        
+            if pd.isna(fecha):
+                continue
 
         else:
             # Los demás procesos mantienen su comportamiento original.
