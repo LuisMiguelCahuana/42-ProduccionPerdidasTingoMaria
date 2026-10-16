@@ -320,38 +320,46 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
 
     return col_fecha, col_suministro, col_cuadrilla
 
-
 def detectar_columnas_produccion(
     df,
     fila_zona,
     fila_codigo,
     proceso
 ):
-    """Detecta las columnas de producción y normaliza sus zonas."""
+    """Detecta cada columna de producción, incluso si la fila de zona tiene celdas combinadas."""
+
     zonas_validas = {"UB", "UR", "R"}
 
+    # Leer la fila de zonas (fila 3 de Excel).
     zonas = df.iloc[fila_zona, :].apply(normalizar_zona)
 
-    # En Averías y Notificaciones las zonas pueden estar
-    # escritas en celdas combinadas de Excel.
-    if proceso in ["Averías", "Notificaciones"]:
-        zonas = zonas.replace("", pd.NA).ffill().fillna("")
+    # Completar hacia la derecha las zonas de las celdas combinadas.
+    # Así, cada columna conserva su zona correspondiente.
+    zonas = zonas.replace("", pd.NA).ffill().fillna("")
 
     columnas = []
 
+    # Recorrer INDIVIDUALMENTE cada columna de la fila de códigos
+    # (fila 4 de Excel).
     for col in range(df.shape[1]):
+
         zona = zonas.iloc[col]
         codigo = df.iloc[fila_codigo, col]
 
-        if zona in zonas_validas and pd.notna(codigo):
-            codigo_limpio = limpiar_codigo(codigo)
+        # Solo procesar columnas con zona válida y código.
+        if zona not in zonas_validas or pd.isna(codigo):
+            continue
 
-            if codigo_limpio:
-                columnas.append({
-                    "columna": col,
-                    "zona": zona,
-                    "codigo": codigo_limpio,
-                })
+        codigo_limpio = limpiar_codigo(codigo)
+
+        if not codigo_limpio:
+            continue
+
+        columnas.append({
+            "columna": col,
+            "zona": zona,
+            "codigo": codigo_limpio,
+        })
 
     if not columnas:
         raise ValueError(
@@ -359,8 +367,6 @@ def detectar_columnas_produccion(
         )
 
     return columnas
-
-
 # ============================================================
 # PROCESAMIENTO DE CADA HOJA
 # ============================================================
