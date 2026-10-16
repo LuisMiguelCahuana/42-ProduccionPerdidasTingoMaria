@@ -544,13 +544,6 @@ def procesar_hoja(
             if pd.isna(fecha):
                 continue
 
-        else:
-            # Los demás procesos mantienen su comportamiento original.
-            fecha = convertir_fecha(fecha_original)
-
-            if pd.isna(fecha):
-                continue
-
         if col_suministro is None:
             suministro = ""
         else:
