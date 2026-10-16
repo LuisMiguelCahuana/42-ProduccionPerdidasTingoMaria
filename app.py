@@ -30,7 +30,7 @@ SCOPES = [
 ]
 
 PROCESOS = {
-    "Actividad-CP": "11-12-13-14 Actividad-CP",
+    "Actividad-CP": "11-12-13-14 Actividad CP",
     "Lecturas": "14 Lecturas ",
     "Averías": "15. Averias",
     "Notificaciones": "16. Notific",
