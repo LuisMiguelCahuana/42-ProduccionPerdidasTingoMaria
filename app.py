@@ -498,6 +498,11 @@ def procesar_hoja(
             proceso
         )
 
+        # En "14 Lecturas ", Nº DE OT está en la columna C.
+        # El índice 2 corresponde a la columna C en pandas.
+        if proceso == "Lecturas":
+            col_suministro = 2
+
         ultima_fila = obtener_ultima_fila(
             df, col_fecha, fila_datos, proceso
         )
