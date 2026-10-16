@@ -31,7 +31,7 @@ SCOPES = [
 
 PROCESOS = {
     "Actividad-CP": "11-12-13-14 Actividad CP",
-    "Lecturas": "14 Lecturas ",
+    "Lecturas": "14 Lecturas",
     "Averías": "15. Averias",
     "Notificaciones": "16. Notific",
     "Itinerante": "17 Itinerant",
@@ -948,7 +948,10 @@ if st.button(
                 io.BytesIO(bytes_produccion)
             )
 
-            hojas_disponibles = excel_produccion.sheet_names
+            hojas_disponibles = {
+                nombre.strip(): nombre
+                for nombre in excel_produccion.sheet_names
+            }
 
             resultados = []
             errores = []
@@ -962,13 +965,16 @@ if st.button(
             ):
                 hoja_origen = PROCESOS[proceso]
 
-                if hoja_origen not in hojas_disponibles:
+                if hoja_origen.strip() not in hojas_disponibles:
                     errores.append(
                         f"{proceso}: no existe la hoja "
                         f"'{hoja_origen}' en el archivo de producción."
                     )
                     progreso.progress(indice / total_procesos)
                     continue
+                
+                # Usar el nombre real de la hoja, conservando sus espacios originales.
+                hoja_origen = hojas_disponibles[hoja_origen.strip()]
 
                 try:
                     df_proceso = procesar_hoja(
