@@ -272,7 +272,7 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
                 r"\s+", " ", encabezado_sin_simbolos
             ).strip()
 
-            if "TECNICO" in encabezado_sin_simbolos:
+            if encabezado_sin_simbolos == "CUADRILLA":
                 col_cuadrilla = col
 
         # ----------------------------------------------------
