@@ -326,27 +326,22 @@ def detectar_columnas_produccion(
     fila_codigo,
     proceso
 ):
-    """Detecta cada columna de producción, incluso si la fila de zona tiene celdas combinadas."""
+    """Detecta cada columna por su zona y código."""
 
     zonas_validas = {"UB", "UR", "R"}
 
-    # Leer la fila de zonas (fila 3 de Excel).
     zonas = df.iloc[fila_zona, :].apply(normalizar_zona)
 
-    # Completar hacia la derecha las zonas de las celdas combinadas.
-    # Así, cada columna conserva su zona correspondiente.
+    # Extender las zonas de celdas combinadas hacia la derecha.
+    # Aplica también a Actividad-CP.
     zonas = zonas.replace("", pd.NA).ffill().fillna("")
 
     columnas = []
 
-    # Recorrer INDIVIDUALMENTE cada columna de la fila de códigos
-    # (fila 4 de Excel).
     for col in range(df.shape[1]):
-
         zona = zonas.iloc[col]
         codigo = df.iloc[fila_codigo, col]
 
-        # Solo procesar columnas con zona válida y código.
         if zona not in zonas_validas or pd.isna(codigo):
             continue
 
@@ -367,6 +362,7 @@ def detectar_columnas_produccion(
         )
 
     return columnas
+
 # ============================================================
 # PROCESAMIENTO DE CADA HOJA
 # ============================================================
