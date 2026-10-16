@@ -257,10 +257,14 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
             col_fecha = col
 
         if proceso == "Lecturas":
-            if "SUMIN" in encabezado or "OT" in encabezado:
+            encabezado_sin_simbolos = (
+                encabezado.replace("°", "").replace("º", "")
+            )
+
+            if encabezado_sin_simbolos == "N DE OT":
                 col_suministro = col
 
-            if "TECNICO" in encabezado:
+            if "TECNICO" in encabezado_sin_simbolos:
                 col_cuadrilla = col
 
         elif proceso in ["Averías", "Notificaciones"]:
@@ -383,11 +387,72 @@ def procesar_hoja(
 
     # --------------------------------------------------------
     # CONFIGURACIÓN ESPECIAL: ITINERANTE
+    # Buscar los encabezados FECHA, MES y CUADRILLA
     # --------------------------------------------------------
     elif proceso == "Itinerante":
-        col_fecha = 1
+
+        col_fecha = None
         col_suministro = None
-        col_cuadrilla = 7
+        col_cuadrilla = None
+
+        for col in range(df.shape[1]):
+            encabezado = normalizar_texto(
+                df.iloc[fila_encabezado, col]
+            )
+
+            if encabezado == "FECHA":
+                col_fecha = col
+
+            elif encabezado == "MES":
+                col_suministro = col
+
+            elif encabezado == "CUADRILLA":
+                col_cuadrilla = col
+
+        faltantes = []
+
+        if col_fecha is None:
+            faltantes.append("FECHA")
+
+        if col_suministro is None:
+            faltantes.append("MES")
+
+        if col_cuadrilla is None:
+            faltantes.append("CUADRILLA")
+
+        if faltantes:
+            raise ValueError(
+                "No se encontraron los encabezados "
+                "en Itinerante: " + ", ".join(faltantes)
+            )
+
+        ultima_fila = obtener_ultima_fila(
+            df, col_fecha, fila_datos, proceso
+        )
+
+        columnas = []
+
+        for col in range(df.shape[1]):
+            zona_original = df.iloc[fila_zona, col]
+            codigo = df.iloc[fila_codigo, col]
+
+            zona = normalizar_zona(zona_original)
+
+            if zona and pd.notna(codigo):
+                codigo_limpio = limpiar_codigo(codigo)
+
+                if codigo_limpio:
+                    columnas.append({
+                        "columna": col,
+                        "zona": zona,
+                        "codigo": codigo_limpio,
+                    })
+
+        if not columnas:
+            raise ValueError(
+                "No se detectaron columnas de producción en Itinerante."
+            )
+
 
         ultima_fila = obtener_ultima_fila(
             df, col_fecha, fila_datos, proceso
