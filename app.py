@@ -257,10 +257,17 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
             col_fecha = col
 
         if proceso == "Lecturas":
-            if "SUMIN" in encabezado or "OT" in encabezado:
+            encabezado_sin_simbolos = (
+                encabezado.replace("°", "").replace("º", "")
+            )
+            encabezado_sin_simbolos = re.sub(
+                r"\s+", " ", encabezado_sin_simbolos
+            ).strip()
+
+            if encabezado_sin_simbolos == "N DE OT":
                 col_suministro = col
 
-            if "TECNICO" in encabezado:
+            if "TECNICO" in encabezado_sin_simbolos:
                 col_cuadrilla = col
 
         elif proceso in ["Averías", "Notificaciones"]:
