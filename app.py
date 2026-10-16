@@ -389,8 +389,8 @@ def procesar_hoja(
     # --------------------------------------------------------
     if proceso == "Actividad-CP":
         col_fecha = 1
-        col_suministro = 3
-        col_cuadrilla = 6
+        col_suministro = 4
+        col_cuadrilla = 7
 
         ultima_fila = obtener_ultima_fila(
             df, col_fecha, fila_datos, proceso
