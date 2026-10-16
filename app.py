@@ -260,10 +260,10 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
             encabezado_sin_simbolos = (
                 encabezado.replace("°", "").replace("º", "")
             )
-
+        
             if encabezado_sin_simbolos == "N DE OT":
                 col_suministro = col
-
+        
             if "TECNICO" in encabezado_sin_simbolos:
                 col_cuadrilla = col
 
