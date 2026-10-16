@@ -240,8 +240,6 @@ def obtener_ultima_fila(df, col_fecha, fila_datos, proceso):
         )
 
     return int(indices_validos[-1])
-
-
 def buscar_columnas_base(df, fila_encabezado, proceso):
     """Identifica las columnas de fecha, suministro y cuadrilla."""
     col_fecha = None
@@ -253,26 +251,37 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
             df.iloc[fila_encabezado, col]
         )
 
+        # Identificar la fecha.
         if "FECHA" in encabezado:
             col_fecha = col
 
+        # ----------------------------------------------------
+        # LECTURAS: Nº DE OT está en la columna C.
+        # ----------------------------------------------------
         if proceso == "Lecturas":
+
+            # La columna C de Excel corresponde al índice 2.
+            col_suministro = 2
+
             encabezado_sin_simbolos = (
-                encabezado.replace("°", "").replace("º", "")
+                encabezado.replace("°", "")
+                .replace("º", "")
             )
+
             encabezado_sin_simbolos = re.sub(
                 r"\s+", " ", encabezado_sin_simbolos
             ).strip()
 
-            if encabezado_sin_simbolos == "N DE OT":
-                col_suministro = col
-
             if "TECNICO" in encabezado_sin_simbolos:
                 col_cuadrilla = col
 
+        # ----------------------------------------------------
+        # AVERÍAS Y NOTIFICACIONES
+        # ----------------------------------------------------
         elif proceso in ["Averías", "Notificaciones"]:
             encabezado_sin_simbolos = (
-                encabezado.replace("°", "").replace("º", "")
+                encabezado.replace("°", "")
+                .replace("º", "")
             )
 
             if encabezado_sin_simbolos in [
@@ -291,16 +300,19 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
             ):
                 col_cuadrilla = col
 
+    # Validar fecha.
     if col_fecha is None:
         raise ValueError(
             f"No se encontró la columna FECHA en {proceso}."
         )
 
+    # Validar suministro.
     if col_suministro is None:
         raise ValueError(
             f"No se encontró SUMINISTRO/OT en {proceso}."
         )
 
+    # Validar técnico o cuadrilla.
     if col_cuadrilla is None:
         raise ValueError(
             f"No se encontró la columna de técnico o cuadrilla en {proceso}."
@@ -497,11 +509,6 @@ def procesar_hoja(
             fila_encabezado,
             proceso
         )
-
-        # En "14 Lecturas ", Nº DE OT está en la columna C.
-        # El índice 2 corresponde a la columna C en pandas.
-        if proceso == "Lecturas":
-            col_suministro = 2
 
         ultima_fila = obtener_ultima_fila(
             df, col_fecha, fila_datos, proceso
