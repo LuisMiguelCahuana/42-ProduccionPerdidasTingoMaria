@@ -118,6 +118,17 @@ def limpiar_codigo(valor):
         texto = texto[:-2]
 
     return texto
+def es_codigo_actividad(valor):
+    """
+    Verifica que el valor tenga formato de código
+    de actividad, por ejemplo:
+    114AB40, 112MP01, 113CP24.
+    """
+    codigo = limpiar_codigo(valor).upper()
+
+    return bool(
+        re.fullmatch(r"\d{3}[A-Z]{2}\d{2}", codigo)
+    )
 
 
 def normalizar_zona(valor):
@@ -320,45 +331,49 @@ def buscar_columnas_base(df, fila_encabezado, proceso):
 
     return col_fecha, col_suministro, col_cuadrilla
 
+
 def detectar_columnas_produccion(
     df,
     fila_zona,
     fila_codigo,
     proceso
 ):
-    """Detecta cada columna por su zona y código."""
+    """Detecta códigos válidos asociados a su zona."""
 
     zonas_validas = {"UB", "UR", "R"}
 
+    # Leer zonas de la fila 3
     zonas = df.iloc[fila_zona, :].apply(normalizar_zona)
 
-    # Extender las zonas de celdas combinadas hacia la derecha.
-    # Aplica también a Actividad-CP.
+    # Completar las celdas combinadas hacia la derecha
     zonas = zonas.replace("", pd.NA).ffill().fillna("")
 
     columnas = []
 
     for col in range(df.shape[1]):
-        zona = zonas.iloc[col]
-        codigo = df.iloc[fila_codigo, col]
 
-        if zona not in zonas_validas or pd.isna(codigo):
+        zona = zonas.iloc[col]
+        codigo = limpiar_codigo(
+            df.iloc[fila_codigo, col]
+        ).upper()
+
+        # Solo zonas reconocidas
+        if zona not in zonas_validas:
             continue
 
-        codigo_limpio = limpiar_codigo(codigo)
-
-        if not codigo_limpio:
+        # Excluir MEDIDOR, PRECINTO, ETC.
+        if not es_codigo_actividad(codigo):
             continue
 
         columnas.append({
             "columna": col,
             "zona": zona,
-            "codigo": codigo_limpio,
+            "codigo": codigo,
         })
 
     if not columnas:
         raise ValueError(
-            f"No se detectaron columnas de producción en {proceso}."
+            f"No se detectaron códigos válidos en {proceso}."
         )
 
     return columnas
@@ -457,8 +472,8 @@ def procesar_hoja(
 
             if zona and pd.notna(codigo):
                 codigo_limpio = limpiar_codigo(codigo)
-
-                if codigo_limpio:
+            
+                if es_codigo_actividad(codigo_limpio):
                     columnas.append({
                         "columna": col,
                         "zona": zona,
@@ -485,8 +500,8 @@ def procesar_hoja(
 
             if zona and pd.notna(codigo):
                 codigo_limpio = limpiar_codigo(codigo)
-
-                if codigo_limpio:
+            
+                if es_codigo_actividad(codigo_limpio):
                     columnas.append({
                         "columna": col,
                         "zona": zona,
