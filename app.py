@@ -217,28 +217,30 @@ def convertir_fecha(valor):
         errors="coerce"
     )
 
-
 def obtener_ultima_fila(df, col_fecha, fila_datos, proceso):
-    """Busca la última fila con datos según el proceso."""
+    """Determina la última fila con registros."""
 
-    # SOLO PARA ITINERANTE:
-    # Buscar la última fila con contenido en cualquier columna.
-    if proceso == "Itinerante":
+    # ITINERANTE Y NOTIFICACIONES:
+    # No depender de que FECHA tenga un valor.
+    if proceso in ["Itinerante", "Notificaciones"]:
+
         datos = df.iloc[fila_datos:, :]
 
         filas_con_datos = datos.notna().any(axis=1)
+
         indices_validos = filas_con_datos[
             filas_con_datos
         ].index
 
         if len(indices_validos) == 0:
             raise ValueError(
-                "No se encontraron registros en la hoja Itinerante."
+                f"No se encontraron registros en {proceso}."
             )
 
         return int(indices_validos[-1])
 
-    # MANTENER EL COMPORTAMIENTO ORIGINAL DE LOS DEMÁS PROCESOS.
+    # DEMÁS PROCESOS:
+    # Mantener el comportamiento original.
     fechas = df.iloc[fila_datos:, col_fecha].apply(
         convertir_fecha
     )
@@ -247,10 +249,11 @@ def obtener_ultima_fila(df, col_fecha, fila_datos, proceso):
 
     if len(indices_validos) == 0:
         raise ValueError(
-            f"No se encontraron fechas válidas en la hoja del proceso {proceso}."
+            f"No se encontraron fechas válidas en {proceso}."
         )
 
     return int(indices_validos[-1])
+
 def buscar_columnas_base(df, fila_encabezado, proceso):
     """Identifica las columnas de fecha, suministro y cuadrilla."""
     col_fecha = None
@@ -546,7 +549,7 @@ def procesar_hoja(
         fecha_original = df.iloc[fila, col_fecha]
         
         if proceso == "Itinerante":
-            # Mantener el comportamiento de Itinerante.
+            # Mantener el funcionamiento original.
             if pd.isna(fecha_original):
                 continue
         
@@ -556,21 +559,18 @@ def procesar_hoja(
                 continue
         
         elif proceso == "Notificaciones":
-            # Extraer FECHA de la hoja 16. Notific.
+            # Aceptar fechas vacías sin descartar el registro.
             if pd.isna(fecha_original):
-                continue
+                fecha = ""
         
-            # Conservar la fecha de cada registro.
-            if isinstance(fecha_original, (pd.Timestamp, datetime)):
+            elif isinstance(fecha_original, (pd.Timestamp, datetime)):
                 fecha = fecha_original.strftime("%d/%m/%Y")
+        
             else:
                 fecha = str(fecha_original).strip()
         
-            if not fecha:
-                continue
-        
         else:
-            # Los demás procesos mantienen su comportamiento original.
+            # Mantener el comportamiento de los demás procesos.
             fecha = convertir_fecha(fecha_original)
         
             if pd.isna(fecha):
