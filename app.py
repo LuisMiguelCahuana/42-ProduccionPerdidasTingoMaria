@@ -542,14 +542,29 @@ def procesar_hoja(
 
     for fila in range(fila_datos, ultima_fila + 1):
 
+        
         fecha_original = df.iloc[fila, col_fecha]
-
+        
         if proceso == "Itinerante":
-            # Conservar exactamente el valor de FECHA de la hoja 17 Itinerant.
+            # Mantener el comportamiento de Itinerante.
             if pd.isna(fecha_original):
                 continue
         
             fecha = str(fecha_original).strip()
+        
+            if not fecha:
+                continue
+        
+        elif proceso == "Notificaciones":
+            # Extraer FECHA de la hoja 16. Notific.
+            if pd.isna(fecha_original):
+                continue
+        
+            # Conservar la fecha de cada registro.
+            if isinstance(fecha_original, (pd.Timestamp, datetime)):
+                fecha = fecha_original.strftime("%d/%m/%Y")
+            else:
+                fecha = str(fecha_original).strip()
         
             if not fecha:
                 continue
@@ -560,6 +575,7 @@ def procesar_hoja(
         
             if pd.isna(fecha):
                 continue
+
 
         if col_suministro is None:
             suministro = ""
