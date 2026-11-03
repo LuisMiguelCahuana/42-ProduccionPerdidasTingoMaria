@@ -872,10 +872,6 @@ def exportar_google_sheets(df, modo):
 # ============================================================
 
 st.title("📊 CONSOLIDADO DE PRODUCCIÓN Y COSTOS")
-st.caption(
-    f"Aplicación Tingo María · Interfaz inicializada · "
-    f"Streamlit {st.__version__}"
-)
 
 st.write(
     "Procesa las hojas de producción, cruza los costos por código "
