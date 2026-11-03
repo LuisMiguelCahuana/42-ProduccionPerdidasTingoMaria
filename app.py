@@ -222,7 +222,7 @@ def obtener_ultima_fila(df, col_fecha, fila_datos, proceso):
 
     # ITINERANTE Y NOTIFICACIONES:
     # No depender de que FECHA tenga un valor.
-    if proceso in ["Itinerante", "Notificaciones"]:
+    if proceso in ["Itinerante", "Notificaciones", "Lecturas"]:
 
         datos = df.iloc[fila_datos:, :]
 
@@ -558,21 +558,30 @@ def procesar_hoja(
             if not fecha:
                 continue
         
+        elif proceso == "Lecturas":
+            # En Lecturas, aceptar registros aunque FECHA esté vacía.
+            if pd.isna(fecha_original) or not str(fecha_original).strip():
+                fecha = ""
+            else:
+                fecha = convertir_fecha(fecha_original)
+                if pd.isna(fecha):
+                    continue
+
         elif proceso == "Notificaciones":
-            # Aceptar fechas vacías sin descartar el registro.
+            # Mantener el comportamiento existente de Notificaciones.
             if pd.isna(fecha_original):
                 fecha = ""
-        
+
             elif isinstance(fecha_original, (pd.Timestamp, datetime)):
                 fecha = fecha_original.strftime("%d/%m/%Y")
-        
+
             else:
                 fecha = str(fecha_original).strip()
-        
+
         else:
             # Mantener el comportamiento de los demás procesos.
             fecha = convertir_fecha(fecha_original)
-        
+
             if pd.isna(fecha):
                 continue
 
