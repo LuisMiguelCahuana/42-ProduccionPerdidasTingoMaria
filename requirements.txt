@@ -1,6 +1,6 @@
-streamlit
-pandas
-openpyxl
-xlrd
-gspread
-google-auth
+streamlit==1.66.1
+pandas==3.1.0
+openpyxl==3.1.5
+xlrd==2.0.2
+gspread==6.2.1
+google-auth==2.62.1
