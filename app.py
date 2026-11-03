@@ -1137,18 +1137,31 @@ if "df_consolidado" in st.session_state:
     st.divider()
     st.subheader("4. Vista previa del consolidado")
 
-    c1, c2, c3 = st.columns(3)
+    # Mostrar indicadores con Markdown/HTML para evitar el componente
+    # st.metric, cuyo módulo JavaScript está fallando en el navegador.
+    total_registros = len(df_mostrar)
+    registros_con_costo = int(df_mostrar["costo_unitario"].notna().sum())
+    costo_total = float(df_mostrar["costo_total"].sum(skipna=True))
 
-    c1.metric("Total de registros", f"{len(df_mostrar):,}")
-
-    c2.metric(
-        "Registros con costo",
-        f"{df_mostrar['costo_unitario'].notna().sum():,}"
-    )
-
-    c3.metric(
-        "Costo total",
-        f"{df_mostrar['costo_total'].sum(skipna=True):,.2f}"
+    st.markdown(
+        f"""
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+                    gap:12px;margin:8px 0 18px 0;">
+          <div style="border:1px solid #d9d9d9;border-radius:10px;padding:14px;">
+            <div style="font-size:13px;color:gray;">Total de registros</div>
+            <div style="font-size:25px;font-weight:650;">{total_registros:,}</div>
+          </div>
+          <div style="border:1px solid #d9d9d9;border-radius:10px;padding:14px;">
+            <div style="font-size:13px;color:gray;">Registros con costo</div>
+            <div style="font-size:25px;font-weight:650;">{registros_con_costo:,}</div>
+          </div>
+          <div style="border:1px solid #d9d9d9;border-radius:10px;padding:14px;">
+            <div style="font-size:13px;color:gray;">Costo total</div>
+            <div style="font-size:25px;font-weight:650;">S/ {costo_total:,.2f}</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     # --------------------------------------------------------
@@ -1167,11 +1180,47 @@ if "df_consolidado" in st.session_state:
         )
     )
 
-    st.dataframe(
-        df_vista,
-        use_container_width=True,
-        hide_index=True,
-        column_config=CONFIG_COLUMNAS,
+    # Renderizar la vista previa como HTML estático para evitar
+    # el componente st.dataframe, cuyo módulo JavaScript no carga.
+    tabla_html = df_vista.to_html(
+        index=False,
+        escape=True,
+        border=0,
+        classes="tabla-consolidado",
+        na_rep="",
+    )
+
+    st.markdown(
+        """
+        <style>
+        .tabla-consolidado {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .tabla-consolidado th {
+            background: #e9eef5;
+            color: #172033;
+            text-align: left;
+            padding: 9px 7px;
+            border-bottom: 2px solid #b8c4d3;
+            white-space: nowrap;
+        }
+        .tabla-consolidado td {
+            padding: 7px;
+            border-bottom: 1px solid #e2e6eb;
+            white-space: nowrap;
+        }
+        .tabla-consolidado tr:nth-child(even) {
+            background: rgba(128,128,128,0.07);
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'<div style="width:100%;overflow-x:auto;">{tabla_html}</div>',
+        unsafe_allow_html=True,
     )
 
     salida_excel = io.BytesIO()
