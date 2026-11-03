@@ -1168,7 +1168,7 @@ if "df_consolidado" in st.session_state:
     # Copia para mostrar: la fecha se convierte a texto para
     # que la celda no cambie de tamaño al ser seleccionada.
     # --------------------------------------------------------
-    df_vista = df_mostrar.head(500).copy()
+    df_vista = df_mostrar.head(10).copy()
 
     df_vista["fecha"] = df_vista["fecha"].apply(
         lambda v: (
@@ -1182,6 +1182,12 @@ if "df_consolidado" in st.session_state:
 
     # Renderizar la vista previa como HTML estático para evitar
     # el componente st.dataframe, cuyo módulo JavaScript no carga.
+    st.caption(
+        f"Vista previa compacta: se muestran los primeros {len(df_vista)} "
+        f"registros de {len(df_mostrar):,}. La descarga y exportación incluyen "
+        "todos los registros."
+    )
+
     tabla_html = df_vista.to_html(
         index=False,
         escape=True,
@@ -1194,11 +1200,14 @@ if "df_consolidado" in st.session_state:
         """
         <style>
         .tabla-consolidado {
-            width: 100%;
+            width: max-content;
+            min-width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 11px;
         }
         .tabla-consolidado th {
+            position: sticky;
+            top: 0;
             background: #e9eef5;
             color: #172033;
             text-align: left;
@@ -1219,7 +1228,7 @@ if "df_consolidado" in st.session_state:
         unsafe_allow_html=True,
     )
     st.markdown(
-        f'<div style="width:100%;overflow-x:auto;">{tabla_html}</div>',
+        f'<div style="width:100%;max-height:300px;overflow:auto;border:1px solid #d9dee7;border-radius:8px;">{tabla_html}</div>',
         unsafe_allow_html=True,
     )
 
