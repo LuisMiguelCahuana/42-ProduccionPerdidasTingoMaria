@@ -38,6 +38,7 @@ PROCESOS = {
 }
 
 COLUMNAS_FINALES = [
+    "unidad_negocio",
     "periodo",
     "fecha",
     "suministro",
@@ -60,6 +61,9 @@ COLUMNAS_FINALES = [
 # ------------------------------------------------------------
 
 CONFIG_COLUMNAS = {
+    "unidad_negocio": st.column_config.Column(
+        "Unidad de negocio", width="small"
+    ),
     "periodo": st.column_config.Column(
         "Periodo", width="small", pinned=True
     ),
@@ -1059,10 +1063,11 @@ if st.button(
                     df_costos
                 )
 
-                # Asignar el periodo a todos los registros.
+                # Asignar la unidad de negocio y el periodo.
+                df_final["unidad_negocio"] = "Tingo Maria"
                 df_final["periodo"] = periodo_exportacion
 
-                # Periodo será la primera columna.
+                # Unidad de negocio será la primera columna.
                 df_final = df_final[COLUMNAS_FINALES]
 
                 st.session_state["df_consolidado"] = df_final
